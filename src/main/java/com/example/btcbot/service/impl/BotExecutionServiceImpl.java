@@ -54,8 +54,10 @@ public class BotExecutionServiceImpl implements BotExecutionService {
         if (!botConfigService.getBoolean("BOT_ENABLE", true)) {
             return new ExecutionResultVO(ExecutionDecisionEnum.NO_ACTION.name(), "机器人已关闭");
         }
+        log.info("当前开始执行本次定时任务！");
         BotRuntimeStateEntity state = runtimeStateService.initIfAbsent(actualSymbol);
         StrategyConfig config = loadConfig();
+        log.info("当前阶段：" + BotStageEnum.getDescByName(state.getStage()));
         if (BotStageEnum.IDLE.name().equals(state.getStage())) {
             return handleIdle(actualSymbol, state, config);
         }
@@ -65,6 +67,7 @@ public class BotExecutionServiceImpl implements BotExecutionService {
         if (BotStageEnum.HOLDING.name().equals(state.getStage())) {
             return handleHolding(actualSymbol, state, config);
         }
+        errorEvent(symbol, "ERROR", "未知阶段: " + state.getStage(), null);
         throw new BizException("未知阶段: " + state.getStage());
     }
 
@@ -167,6 +170,7 @@ public class BotExecutionServiceImpl implements BotExecutionService {
         logEntity.setUnmetReasons(jsonHelper.toJson(unmetReasons));
 
         if (config.singleOrderU.compareTo(symbolRule.minNotional) < 0) {
+            errorEvent(symbol, "ERROR", "单次下单金额小于minNotional，singleOrderU=" + config.singleOrderU.toPlainString(), null);
             throw new BizException("单次下单金额小于minNotional，singleOrderU=" + config.singleOrderU.toPlainString());
         }
 
@@ -183,7 +187,9 @@ public class BotExecutionServiceImpl implements BotExecutionService {
             BigDecimal freeBase = fetchFreeBalance(symbolRule.baseAsset);
             BigDecimal sellQty = BigDecimalHelper.roundDown(freeBase, symbolRule.lotStepSize);
             if (sellQty.compareTo(symbolRule.minQty) < 0) {
+                errorEvent(symbol, "ERROR", "规则3买入后可卖数量不足minQty，sellQty=" + sellQty.toPlainString(), null);
                 throw new BizException("规则3买入后可卖数量不足minQty，sellQty=" + sellQty.toPlainString());
+
             }
             BigDecimal tp = BigDecimalHelper.roundDown(buyTrade.avgPrice.multiply(BigDecimal.ONE.add(config.takeProfitRate)), symbolRule.tickSize);
             BigDecimal slStop = BigDecimalHelper.roundDown(buyTrade.avgPrice.multiply(BigDecimal.ONE.subtract(config.stopLossRate)), symbolRule.tickSize);
@@ -226,6 +232,7 @@ public class BotExecutionServiceImpl implements BotExecutionService {
             BigDecimal limitBuyPrice = BigDecimalHelper.roundDown(current.multiply(BigDecimal.ONE.subtract(config.rule4PullbackRate)), symbolRule.tickSize);
             BigDecimal buyQty = BigDecimalHelper.roundDown(config.singleOrderU.divide(limitBuyPrice, 16, RoundingMode.DOWN), symbolRule.lotStepSize);
             if (buyQty.compareTo(symbolRule.minQty) < 0) {
+                errorEvent(symbol, "ERROR", "规则4买单数量不足minQty，buyQty=" + buyQty.toPlainString(), null);
                 throw new BizException("规则4买单数量不足minQty，buyQty=" + buyQty.toPlainString());
             }
             String clientOrderId = buildClientOrderId("r4b");
@@ -277,6 +284,7 @@ public class BotExecutionServiceImpl implements BotExecutionService {
             BigDecimal freeBase = fetchFreeBalance(symbolRule.baseAsset);
             BigDecimal sellQty = BigDecimalHelper.roundDown(freeBase, symbolRule.lotStepSize);
             if (sellQty.compareTo(symbolRule.minQty) < 0) {
+                errorEvent(symbol, "ERROR", "规则3买入后可卖数量不足minQty，sellQty=" + sellQty.toPlainString(), null);
                 throw new BizException("规则3买入后可卖数量不足minQty，sellQty=" + sellQty.toPlainString());
             }
             BigDecimal tp = BigDecimalHelper.roundDown(buyTrade.avgPrice.multiply(BigDecimal.ONE.add(config.takeProfitRate)), symbolRule.tickSize);
@@ -392,6 +400,11 @@ public class BotExecutionServiceImpl implements BotExecutionService {
     private void notifyEvent(String symbol, String eventType, String message, Object payload) {
         botRecordService.saveEvent(symbol, eventType, message, jsonHelper.toJson(payload));
         botMessageService.send(message);
+    }
+
+    private void errorEvent(String symbol, String eventType, String message, Object payload) {
+        botRecordService.saveEvent(symbol, eventType, message, jsonHelper.toJson(payload));
+        botMessageService.errorSend(message);
     }
 
     private FilledTrade parseFilledTrade(Map<String, Object> orderResp) {
