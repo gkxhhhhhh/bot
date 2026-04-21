@@ -24,9 +24,9 @@ public class BotMessageServiceImpl implements BotMessageService {
         OapiRobotSendRequest req = new OapiRobotSendRequest();
         //定义文本内容
         OapiRobotSendRequest.Text text = new OapiRobotSendRequest.Text();
-        text.setContent("成交消息");
+        text.setContent("成交消息：" + message);
         //设置消息类型
-        req.setMsgtype("成交消息：" + message);
+        req.setMsgtype("text");
         req.setText(text);
         try {
             OapiRobotSendResponse rsp = client.execute(req, binanceSymbol);
@@ -44,9 +44,9 @@ public class BotMessageServiceImpl implements BotMessageService {
         OapiRobotSendRequest req = new OapiRobotSendRequest();
         //定义文本内容
         OapiRobotSendRequest.Text text = new OapiRobotSendRequest.Text();
-        text.setContent("错误消息");
+        text.setContent("错误消息：" + message);
         //设置消息类型
-        req.setMsgtype("错误消息：" + message);
+        req.setMsgtype("text");
         req.setText(text);
         try {
             OapiRobotSendResponse rsp = client.execute(req, binanceSymbol);

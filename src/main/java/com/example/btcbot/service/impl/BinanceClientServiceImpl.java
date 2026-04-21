@@ -3,6 +3,7 @@ package com.example.btcbot.service.impl;
 import com.example.btcbot.common.BizException;
 import com.example.btcbot.service.BinanceClientService;
 import com.example.btcbot.service.BotConfigService;
+import com.example.btcbot.service.BotMessageService;
 import com.example.btcbot.util.HmacHelper;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -29,9 +30,11 @@ public class BinanceClientServiceImpl implements BinanceClientService {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final BotConfigService botConfigService;
+    private final BotMessageService botMessageService;
 
-    public BinanceClientServiceImpl(BotConfigService botConfigService) {
+    public BinanceClientServiceImpl(BotConfigService botConfigService, BotMessageService botMessageService) {
         this.botConfigService = botConfigService;
+        this.botMessageService = botMessageService;
     }
 
 //    @Override
@@ -158,23 +161,31 @@ public class BinanceClientServiceImpl implements BinanceClientService {
     }
 
     @SuppressWarnings("unchecked")
-    private Map<String, Object> signedRequest(HttpMethod method, String path, Map<String, String> params) {
+    private Map signedRequest(HttpMethod method, String path, Map params) {
         String apiKey = botConfigService.getRequiredString("BINANCE_API_KEY");
         String apiSecret = botConfigService.getRequiredString("BINANCE_API_SECRET");
         String recvWindow = botConfigService.getEnabledConfigMap().get("BINANCE_RECV_WINDOW");
+
         params.put("recvWindow", recvWindow == null ? "5000" : recvWindow);
         params.put("timestamp", String.valueOf(System.currentTimeMillis()));
 
         String query = buildQuery(params);
         String signature = HmacHelper.hmacSha256Hex(query, apiSecret);
-        String body = query + "&signature=" + urlEncode(signature);
-        String url = restBaseUrl() + path;
+        String signedQuery = query + "&signature=" + urlEncode(signature);
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.set("X-MBX-APIKEY", apiKey);
-        HttpEntity<String> entity = new HttpEntity<String>(body, headers);
+
         try {
+            if (HttpMethod.GET.equals(method) || HttpMethod.DELETE.equals(method)) {
+                String url = restBaseUrl() + path + "?" + signedQuery;
+                HttpEntity<?> entity = new HttpEntity<>(headers);
+                return restTemplate.exchange(url, method, entity, Map.class).getBody();
+            }
+
+            String url = restBaseUrl() + path;
+            HttpEntity<String> entity = new HttpEntity<>(signedQuery, headers);
             return restTemplate.exchange(url, method, entity, Map.class).getBody();
         } catch (HttpStatusCodeException e) {
             e.printStackTrace();

@@ -12,6 +12,7 @@ import com.example.btcbot.enums.OrderActionEnum;
 import com.example.btcbot.service.*;
 import com.example.btcbot.util.BigDecimalHelper;
 import com.example.btcbot.util.JsonHelper;
+import com.example.btcbot.util.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -268,7 +269,32 @@ public class BotExecutionServiceImpl implements BotExecutionService {
     }
 
     private ExecutionResultVO handleRule4Pending(String symbol, BotRuntimeStateEntity state, StrategyConfig config) {
+        if (!StringUtils.hasText(symbol)) {
+            log.error("规则4待买阶段查询订单失败，symbol为空，buyOrderId={}", state.getBuyOrderId());
+            errorEvent(symbol, "QUERY_ORDER_ERROR", "规则4待买阶段查询订单失败：symbol为空", state);
+            return new ExecutionResultVO(ExecutionDecisionEnum.NO_ACTION.name(), "symbol为空，无法查询挂单");
+        }
+
+        symbol = symbol.trim();
+
+        if (!StringUtils.hasText(symbol)) {
+            log.error("规则4待买阶段查询订单失败，symbol去空格后为空，buyOrderId={}", state.getBuyOrderId());
+            errorEvent(symbol, "QUERY_ORDER_ERROR", "规则4待买阶段查询订单失败：symbol去空格后为空", state);
+            return new ExecutionResultVO(ExecutionDecisionEnum.NO_ACTION.name(), "symbol为空，无法查询挂单");
+        }
+
+        if (state.getBuyOrderId() == null) {
+            log.error("规则4待买阶段查询订单失败，buyOrderId为空，symbol={}", symbol);
+            errorEvent(symbol, "QUERY_ORDER_ERROR", "规则4待买阶段查询订单失败：buyOrderId为空，已重置为空闲状态", state);
+            runtimeStateService.resetToIdle(symbol);
+            return new ExecutionResultVO(ExecutionDecisionEnum.NO_ACTION.name(), "buyOrderId为空，已重置为空闲状态");
+        }
+
+        log.info("规则4待买阶段开始查询订单，symbol={}, buyOrderId={}", symbol, state.getBuyOrderId());
+
         Map<String, Object> orderResp = binanceClientService.queryOrder(symbol, state.getBuyOrderId());
+        log.info("规则4待买阶段查询订单结束，symbol={}, buyOrderId={}，result:{}", symbol, state.getBuyOrderId(), JsonUtils.toJson(orderResp));
+
         String status = String.valueOf(orderResp.get("status"));
         if ("FILLED".equals(status) || "PARTIALLY_FILLED".equals(status)) {
             if ("PARTIALLY_FILLED".equals(status)) {
