@@ -1,31 +1,30 @@
 package com.example.btcbot.enums;
 
 /**
- * 策略执行结果枚举
+ * Binance 订单状态枚举
  */
-public enum ExecutionDecisionEnum {
+public enum BinanceOrderStatusEnum {
 
-    RULE3_MARKET_BUY("命中规则3，市价买入"),
-    RULE4_LIMIT_BUY("命中规则4，限价买入"),
-    NO_ACTION("本次无动作"),
-    RULE4_INVALIDATED("规则4挂单失效"),
-    TAKE_PROFIT_FILLED("止盈单已成交"),
-    STOP_LOSS_FILLED("止损单已成交"),
-    FORCE_TIMEOUT_SELL("持仓超时，强制卖出");
+    NEW("订单已经被撮合引擎接受，但还没有成交"),
+    FILLED("订单已经全部成交完成"),
+    PARTIALLY_FILLED("订单已部分成交，仍有剩余数量未成交"),
+    CANCELED("订单已被主动取消"),
+    EXPIRED("订单已失效或过期"),
+    REJECTED("订单被拒绝，未成功进入正常撮合流程");
 
     /**
-     * 描述
+     * 状态描述
      */
     private final String desc;
 
-    ExecutionDecisionEnum(String desc) {
+    BinanceOrderStatusEnum(String desc) {
         this.desc = desc;
     }
 
     /**
-     * 获取描述
+     * 获取状态描述
      *
-     * @return 描述
+     * @return 状态描述
      */
     public String getDesc() {
         return desc;
@@ -42,7 +41,7 @@ public enum ExecutionDecisionEnum {
             return "";
         }
 
-        for (ExecutionDecisionEnum item : ExecutionDecisionEnum.values()) {
+        for (BinanceOrderStatusEnum item : BinanceOrderStatusEnum.values()) {
             if (item.name().equals(name)) {
                 return item.getDesc();
             }
@@ -56,12 +55,12 @@ public enum ExecutionDecisionEnum {
      * @param name 枚举名称
      * @return 枚举对象，未匹配到时返回 null
      */
-    public static ExecutionDecisionEnum getByName(String name) {
+    public static BinanceOrderStatusEnum getByName(String name) {
         if (name == null || name.trim().isEmpty()) {
             return null;
         }
 
-        for (ExecutionDecisionEnum item : ExecutionDecisionEnum.values()) {
+        for (BinanceOrderStatusEnum item : BinanceOrderStatusEnum.values()) {
             if (item.name().equals(name)) {
                 return item;
             }

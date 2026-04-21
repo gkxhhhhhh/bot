@@ -6,6 +6,7 @@ import com.example.btcbot.dto.binance.Recent24hRangeDTO;
 import com.example.btcbot.entity.BotExecutionLogEntity;
 import com.example.btcbot.entity.BotOrderRecordEntity;
 import com.example.btcbot.entity.BotRuntimeStateEntity;
+import com.example.btcbot.enums.BinanceOrderStatusEnum;
 import com.example.btcbot.enums.BotStageEnum;
 import com.example.btcbot.enums.ExecutionDecisionEnum;
 import com.example.btcbot.enums.OrderActionEnum;
@@ -296,8 +297,9 @@ public class BotExecutionServiceImpl implements BotExecutionService {
         log.info("规则4待买阶段查询订单结束，symbol={}, buyOrderId={}，result:{}", symbol, state.getBuyOrderId(), JsonUtils.toJson(orderResp));
 
         String status = String.valueOf(orderResp.get("status"));
-        if ("FILLED".equals(status) || "PARTIALLY_FILLED".equals(status)) {
-            if ("PARTIALLY_FILLED".equals(status)) {
+        log.info("当前订单状态为：{},含义为：{}",status,BinanceOrderStatusEnum.getByName(status).getDesc());
+        if (BinanceOrderStatusEnum.FILLED.name().equals(status) || BinanceOrderStatusEnum.PARTIALLY_FILLED.name().equals(status)) {
+            if (BinanceOrderStatusEnum.PARTIALLY_FILLED.name().equals(status)) {
                 Map<String, Object> cancelResp = binanceClientService.cancelOrder(symbol, state.getBuyOrderId());
                 botRecordService.saveOrderRecord(symbol, state.getRuleType(), OrderActionEnum.CANCEL_BUY.name(), "BUY", "LIMIT",
                         state.getBuyOrderId(), null, state.getBuyClientOrderId(), state.getLimitBuyPrice(), state.getEntryQty(),
@@ -346,7 +348,7 @@ public class BotExecutionServiceImpl implements BotExecutionService {
             return new ExecutionResultVO(ExecutionDecisionEnum.RULE4_LIMIT_BUY.name(), "规则4买单已成交并挂保护单");
         }
 
-        if ("NEW".equals(status)) {
+        if (BinanceOrderStatusEnum.NEW.name().equals(status)) {
             Map<String, Object> ticker = binanceClientService.getTicker24h(symbol);
             BigDecimal current = BigDecimalHelper.toBigDecimal(ticker.get("lastPrice"));
             if (state.getInvalidationPrice() != null && current.compareTo(state.getInvalidationPrice()) >= 0) {
@@ -362,12 +364,11 @@ public class BotExecutionServiceImpl implements BotExecutionService {
             return new ExecutionResultVO(ExecutionDecisionEnum.NO_ACTION.name(), "规则4挂单继续有效");
         }
 
-        if ("CANCELED".equals(status) || "EXPIRED".equals(status) || "REJECTED".equals(status)) {
+        if (BinanceOrderStatusEnum.CANCELED.name().equals(status) || BinanceOrderStatusEnum.EXPIRED.name().equals(status) || BinanceOrderStatusEnum.REJECTED.name().equals(status)) {
             runtimeStateService.resetToIdle(symbol);
             notifyEvent(symbol, "BUY_INVALIDATED", "【挂单失效】规则4买单状态=" + status + "，已重置为空仓状态", orderResp);
             return new ExecutionResultVO(ExecutionDecisionEnum.RULE4_INVALIDATED.name(), "规则4买单已结束");
         }
-
         return new ExecutionResultVO(ExecutionDecisionEnum.NO_ACTION.name(), "规则4挂单继续有效");
     }
 

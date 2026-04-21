@@ -1,5 +1,9 @@
 package com.example.btcbot.dto;
 
+import com.example.btcbot.enums.ExecutionDecisionEnum;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class ExecutionResultVO {
     private String decision;
     private String message;
@@ -10,6 +14,7 @@ public class ExecutionResultVO {
     public ExecutionResultVO(String decision, String message) {
         this.decision = decision;
         this.message = message;
+        log.info("{}----{}", ExecutionDecisionEnum.getByName(decision).getDesc(), message);
     }
 
     public String getDecision() {
