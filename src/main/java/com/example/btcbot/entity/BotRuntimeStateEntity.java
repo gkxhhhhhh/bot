@@ -2,83 +2,134 @@ package com.example.btcbot.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Data
 @TableName("t_bot_runtime_state")
 public class BotRuntimeStateEntity extends BaseEntity {
+
+    /**
+     * 主键ID
+     */
     @TableId
     private Long id;
+
+    /**
+     * 交易对，例如 BTCUSDT
+     */
     private String symbol;
+
+    /**
+     * 当前阶段
+     */
     private String stage;
+
+    /**
+     * 当前命中的规则类型
+     */
     private String ruleType;
+
+    /**
+     * 基础资产，例如 BTC
+     */
     private String baseAsset;
+
+    /**
+     * 计价资产，例如 USDT
+     */
     private String quoteAsset;
+
+    /**
+     * 买单订单ID
+     */
     private Long buyOrderId;
+
+    /**
+     * 买单客户端订单号
+     */
     private String buyClientOrderId;
+
+    /**
+     * 限价买入价格
+     */
     private BigDecimal limitBuyPrice;
+
+    /**
+     * 卖出OCO订单列表ID
+     */
     private Long sellOrderListId;
+
+    /**
+     * 止盈单订单ID
+     */
     private Long tpOrderId;
+
+    /**
+     * 止损单订单ID
+     */
     private Long slOrderId;
+
+    /**
+     * 入场价格
+     */
     private BigDecimal entryPrice;
+
+    /**
+     * 入场数量
+     */
     private BigDecimal entryQty;
+
+    /**
+     * 入场时间
+     */
     private LocalDateTime entryTime;
+
+    /**
+     * 退出超时时间
+     */
     private LocalDateTime exitExpireTime;
+
+    /**
+     * 止盈价格
+     */
     private BigDecimal takeProfitPrice;
+
+    /**
+     * 止损触发价格
+     */
     private BigDecimal stopLossPrice;
+
+    /**
+     * 触发时记录的24小时最高价
+     */
     private BigDecimal h0;
+
+    /**
+     * 触发时记录的24小时最低价
+     */
     private BigDecimal l0;
+
+    /**
+     * 触发时记录的24小时区间宽度
+     */
     private BigDecimal r0;
+
+    /**
+     * 触发时记录的当前价格
+     */
     private BigDecimal p0;
+
+    /**
+     * 规则4失效价格
+     */
     private BigDecimal invalidationPrice;
+
+    /**
+     * 规则触发时间
+     */
     private LocalDateTime triggerTime;
 
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public String getSymbol() { return symbol; }
-    public void setSymbol(String symbol) { this.symbol = symbol; }
-    public String getStage() { return stage; }
-    public void setStage(String stage) { this.stage = stage; }
-    public String getRuleType() { return ruleType; }
-    public void setRuleType(String ruleType) { this.ruleType = ruleType; }
-    public String getBaseAsset() { return baseAsset; }
-    public void setBaseAsset(String baseAsset) { this.baseAsset = baseAsset; }
-    public String getQuoteAsset() { return quoteAsset; }
-    public void setQuoteAsset(String quoteAsset) { this.quoteAsset = quoteAsset; }
-    public Long getBuyOrderId() { return buyOrderId; }
-    public void setBuyOrderId(Long buyOrderId) { this.buyOrderId = buyOrderId; }
-    public String getBuyClientOrderId() { return buyClientOrderId; }
-    public void setBuyClientOrderId(String buyClientOrderId) { this.buyClientOrderId = buyClientOrderId; }
-    public BigDecimal getLimitBuyPrice() { return limitBuyPrice; }
-    public void setLimitBuyPrice(BigDecimal limitBuyPrice) { this.limitBuyPrice = limitBuyPrice; }
-    public Long getSellOrderListId() { return sellOrderListId; }
-    public void setSellOrderListId(Long sellOrderListId) { this.sellOrderListId = sellOrderListId; }
-    public Long getTpOrderId() { return tpOrderId; }
-    public void setTpOrderId(Long tpOrderId) { this.tpOrderId = tpOrderId; }
-    public Long getSlOrderId() { return slOrderId; }
-    public void setSlOrderId(Long slOrderId) { this.slOrderId = slOrderId; }
-    public BigDecimal getEntryPrice() { return entryPrice; }
-    public void setEntryPrice(BigDecimal entryPrice) { this.entryPrice = entryPrice; }
-    public BigDecimal getEntryQty() { return entryQty; }
-    public void setEntryQty(BigDecimal entryQty) { this.entryQty = entryQty; }
-    public LocalDateTime getEntryTime() { return entryTime; }
-    public void setEntryTime(LocalDateTime entryTime) { this.entryTime = entryTime; }
-    public LocalDateTime getExitExpireTime() { return exitExpireTime; }
-    public void setExitExpireTime(LocalDateTime exitExpireTime) { this.exitExpireTime = exitExpireTime; }
-    public BigDecimal getTakeProfitPrice() { return takeProfitPrice; }
-    public void setTakeProfitPrice(BigDecimal takeProfitPrice) { this.takeProfitPrice = takeProfitPrice; }
-    public BigDecimal getStopLossPrice() { return stopLossPrice; }
-    public void setStopLossPrice(BigDecimal stopLossPrice) { this.stopLossPrice = stopLossPrice; }
-    public BigDecimal getH0() { return h0; }
-    public void setH0(BigDecimal h0) { this.h0 = h0; }
-    public BigDecimal getL0() { return l0; }
-    public void setL0(BigDecimal l0) { this.l0 = l0; }
-    public BigDecimal getR0() { return r0; }
-    public void setR0(BigDecimal r0) { this.r0 = r0; }
-    public BigDecimal getP0() { return p0; }
-    public void setP0(BigDecimal p0) { this.p0 = p0; }
-    public BigDecimal getInvalidationPrice() { return invalidationPrice; }
-    public void setInvalidationPrice(BigDecimal invalidationPrice) { this.invalidationPrice = invalidationPrice; }
-    public LocalDateTime getTriggerTime() { return triggerTime; }
-    public void setTriggerTime(LocalDateTime triggerTime) { this.triggerTime = triggerTime; }
 }

@@ -2,8 +2,11 @@ spring:
   application:
     name: btc-bot-springboot
   datasource:
-    url: jdbc:mysql://192.168.111.3:3306/btc_bot?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
-    username: local_root
+#    url: jdbc:mysql://192.168.111.3:3306/btc_bot?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+#    username: local_root
+#    password: 1qaz@WSX3edc
+    url: jdbc:mysql://127.0.0.1:3306/btc_bot?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
     password: 1qaz@WSX3edc
     driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:

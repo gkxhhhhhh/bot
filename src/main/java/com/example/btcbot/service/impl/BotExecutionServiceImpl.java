@@ -261,6 +261,7 @@ public class BotExecutionServiceImpl implements BotExecutionService {
 
             logEntity.setDecision(ExecutionDecisionEnum.RULE4_LIMIT_BUY.name());
             botRecordService.saveExecutionLog(logEntity);
+            notifyEvent(symbol, "BUY_FILLED", "【挂单】规则4现价买入挂单，挂单价格=" + state.getLimitBuyPrice(),null);
             return new ExecutionResultVO(ExecutionDecisionEnum.RULE4_LIMIT_BUY.name(), "规则4已挂限价买单");
         }
 
